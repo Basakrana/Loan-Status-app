@@ -2,8 +2,7 @@ import joblib
 import pandas as pd
 import streamlit as st
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 # -------------------- Page Configuration --------------------
 st.set_page_config(
@@ -16,21 +15,6 @@ st.set_page_config(
 # -------------------- Custom CSS --------------------
 st.markdown("""
 <style>
-    /* Import Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-    
-    /* Main theme colors */
-    :root {
-        --primary-color: #ff6b6b;
-        --secondary-color: #4ecdc4;
-        --accent-color: #45b7d1;
-        --success-color: #96ceb4;
-        --warning-color: #feca57;
-        --error-color: #ff9ff3;
-        --dark-color: #2f3542;
-        --light-color: #f1f2f6;
-    }
-    
     /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -39,7 +23,6 @@ st.markdown("""
     /* Custom background */
     .stApp {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        font-family: 'Poppins', sans-serif;
     }
     
     /* Main header styling */
@@ -50,37 +33,21 @@ st.markdown("""
         text-align: center;
         margin-bottom: 2rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .main-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50%" cy="40%"><stop offset="0%" stop-color="rgba(255,255,255,.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23a)"/></svg>');
+        color: white;
     }
     
     .main-title {
-        color: white;
         font-size: 3.5rem;
         font-weight: 700;
         margin-bottom: 1rem;
         text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-        position: relative;
-        z-index: 1;
     }
     
     .main-subtitle {
-        color: rgba(255, 255, 255, 0.95);
         font-size: 1.3rem;
         font-weight: 400;
-        position: relative;
-        z-index: 1;
         line-height: 1.6;
+        opacity: 0.95;
     }
     
     /* Feature cards */
@@ -116,7 +83,7 @@ st.markdown("""
     .feature-title {
         font-size: 1.3rem;
         font-weight: 600;
-        color: var(--dark-color);
+        color: #2f3542;
         margin-bottom: 0.5rem;
     }
     
@@ -138,12 +105,12 @@ st.markdown("""
     }
     
     .form-section-title {
-        color: var(--dark-color);
+        color: #2f3542;
         font-size: 1.8rem;
         font-weight: 600;
         margin-bottom: 1.5rem;
         padding-bottom: 0.5rem;
-        border-bottom: 3px solid var(--primary-color);
+        border-bottom: 3px solid #ff6b6b;
         display: inline-block;
     }
     
@@ -153,32 +120,30 @@ st.markdown("""
         border: 2px solid #e1e5e9;
         border-radius: 12px;
         transition: all 0.3s ease;
-        font-family: 'Poppins', sans-serif;
     }
     
     .stSelectbox > div > div > div:focus-within {
-        border-color: var(--primary-color);
+        border-color: #ff6b6b;
         box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
         transform: translateY(-2px);
     }
     
-    .stTextInput > div > div > input {
+    .stNumberInput > div > div > input {
         border: 2px solid #e1e5e9;
         border-radius: 12px;
         padding: 12px 16px;
         transition: all 0.3s ease;
-        font-family: 'Poppins', sans-serif;
         background: white;
     }
     
-    .stTextInput > div > div > input:focus {
-        border-color: var(--primary-color);
+    .stNumberInput > div > div > input:focus {
+        border-color: #ff6b6b;
         box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
         transform: translateY(-2px);
     }
     
     /* Button styling */
-    .predict-button {
+    .stButton > button {
         background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
         color: white;
         border: none;
@@ -192,10 +157,9 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: 1px;
         width: 100%;
-        font-family: 'Poppins', sans-serif;
     }
     
-    .predict-button:hover {
+    .stButton > button:hover {
         transform: translateY(-3px);
         box-shadow: 0 12px 35px rgba(255, 107, 107, 0.6);
     }
@@ -273,42 +237,10 @@ st.markdown("""
         backdrop-filter: blur(15px);
     }
     
-    /* Animation classes */
-    .fade-in {
-        animation: fadeInUp 0.8s ease-out;
-    }
-    
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    /* Loading spinner */
-    .loading-spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid var(--primary-color);
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
     /* Info boxes */
     .info-highlight {
         background: linear-gradient(135deg, rgba(69, 183, 209, 0.1), rgba(78, 205, 196, 0.1));
-        border-left: 5px solid var(--accent-color);
+        border-left: 5px solid #45b7d1;
         padding: 1.5rem;
         border-radius: 10px;
         margin: 1rem 0;
@@ -317,7 +249,7 @@ st.markdown("""
     
     .warning-highlight {
         background: linear-gradient(135deg, rgba(254, 202, 87, 0.1), rgba(255, 107, 107, 0.1));
-        border-left: 5px solid var(--warning-color);
+        border-left: 5px solid #feca57;
         padding: 1.5rem;
         border-radius: 10px;
         margin: 1rem 0;
@@ -342,7 +274,7 @@ model_XGBoost = load_model()
 
 # -------------------- Header --------------------
 st.markdown("""
-<div class="main-header fade-in">
+<div class="main-header">
     <div class="main-title">🚗 AI Car Price Predictor</div>
     <div class="main-subtitle">
         Get instant, accurate car valuations powered by advanced machine learning<br>
@@ -353,7 +285,7 @@ st.markdown("""
 
 # -------------------- Feature Cards --------------------
 st.markdown("""
-<div class="feature-grid fade-in">
+<div class="feature-grid">
     <div class="feature-card">
         <span class="feature-icon">🤖</span>
         <div class="feature-title">AI-Powered</div>
@@ -414,7 +346,7 @@ transmission_types = ['Manual','Automatic']
 
 # -------------------- Main Form --------------------
 st.markdown("""
-<div class="form-container fade-in">
+<div class="form-container">
     <h2 class="form-section-title">🔧 Vehicle Specifications</h2>
 </div>
 """, unsafe_allow_html=True)
@@ -431,69 +363,42 @@ with col1:
 
 with col2:
     st.markdown("#### 📊 Performance Specs")
-    engine = st.text_input("🔧 Engine Capacity (CC)", "1200", help="Engine displacement in cubic centimeters")
-    max_power = st.text_input("⚡ Max Power (hp)", "120", help="Maximum power output in horsepower")
-    mileage = st.text_input("⛽ Mileage (kmpl)", "20", help="Fuel efficiency in kilometers per liter")
-    seats = st.text_input("💺 Seating Capacity", "5", help="Number of seats in the vehicle")
+    engine = st.number_input("🔧 Engine Capacity (CC)", min_value=500, value=1200, help="Engine displacement in cubic centimeters")
+    max_power = st.number_input("⚡ Max Power (hp)", min_value=50, value=120, help="Maximum power output in horsepower")
+    mileage = st.number_input("⛽ Mileage (kmpl)", min_value=1.0, value=20.0, help="Fuel efficiency in kilometers per liter")
+    seats = st.number_input("💺 Seating Capacity", min_value=2, value=5, help="Number of seats in the vehicle")
 
 with col3:
     st.markdown("#### 📈 Usage & Condition")
-    km_driven = st.text_input("🛣️ Kilometers Driven", "10000", help="Total distance covered")
-    age = st.text_input("📅 Vehicle Age (years)", "3", help="Age of the vehicle in years")
+    km_driven = st.number_input("🛣️ Kilometers Driven", min_value=0, value=10000, help="Total distance covered")
+    age = st.number_input("📅 Vehicle Age (years)", min_value=0, value=3, help="Age of the vehicle in years")
     seller_type = st.selectbox("🏪 Seller Type", seller_types, help="Type of seller affects pricing")
 
 # -------------------- Real-time Metrics --------------------
-try:
-    current_age = float(age) if age else 0
-    current_km = float(km_driven) if km_driven else 0
-    current_mileage = float(mileage) if mileage else 0
-    current_power = float(max_power) if max_power else 0
-    
-    st.markdown("---")
-    st.markdown("### 📊 Vehicle Analysis")
-    
-    metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
-    
-    with metric_col1:
-        condition = "Excellent" if current_age < 3 else "Good" if current_age < 7 else "Fair"
-        st.metric("🏆 Condition", condition)
-    
-    with metric_col2:
-        usage_level = "Low" if current_km < 30000 else "Medium" if current_km < 80000 else "High"
-        st.metric("📊 Usage Level", usage_level)
-    
-    with metric_col3:
-        efficiency = "High" if current_mileage > 18 else "Medium" if current_mileage > 12 else "Low"
-        st.metric("⛽ Fuel Efficiency", efficiency)
-    
-    with metric_col4:
-        performance = "High" if current_power > 150 else "Medium" if current_power > 100 else "Standard"
-        st.metric("⚡ Performance", performance)
+st.markdown("---")
+st.markdown("### 📊 Vehicle Analysis")
 
-except (ValueError, TypeError):
-    st.info("📝 Please fill in all numeric fields to see vehicle analysis")
+metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
 
-# -------------------- Prepare DataFrame --------------------
-df = None
-input_valid = True
+with metric_col1:
+    condition = "Excellent" if age < 3 else "Good" if age < 7 else "Fair"
+    condition_color = "🟢" if age < 3 else "🟡" if age < 7 else "🔴"
+    st.metric("🏆 Condition", f"{condition_color} {condition}")
 
-try:
-    df = pd.DataFrame({
-        'name': [name],
-        'age': [float(age)],
-        'km_driven': [float(km_driven)],
-        'fuel': [fuel],
-        'seller_type': [seller_type],
-        'transmission': [transmission],
-        'owner': [owner],
-        'mileage': [float(mileage)],
-        'engine': [float(engine)],
-        'max_power': [float(max_power)],
-        'seats': [float(seats)]
-    })
-except Exception as e:
-    input_valid = False
-    st.error(f"⚠️ Please check your inputs: {str(e)}")
+with metric_col2:
+    usage_level = "Low" if km_driven < 30000 else "Medium" if km_driven < 80000 else "High"
+    usage_color = "🟢" if km_driven < 30000 else "🟡" if km_driven < 80000 else "🔴"
+    st.metric("📊 Usage Level", f"{usage_color} {usage_level}")
+
+with metric_col3:
+    efficiency = "High" if mileage > 18 else "Medium" if mileage > 12 else "Low"
+    efficiency_color = "🟢" if mileage > 18 else "🟡" if mileage > 12 else "🔴"
+    st.metric("⛽ Fuel Efficiency", f"{efficiency_color} {efficiency}")
+
+with metric_col4:
+    performance = "High" if max_power > 150 else "Medium" if max_power > 100 else "Standard"
+    performance_color = "🟢" if max_power > 150 else "🟡" if max_power > 100 else "🔴"
+    st.metric("⚡ Performance", f"{performance_color} {performance}")
 
 # -------------------- Prediction Section --------------------
 st.markdown("---")
@@ -503,19 +408,32 @@ with predict_col2:
     if st.button("🔮 **GET AI PRICE PREDICTION**", key="predict_btn", help="Click to get instant AI-powered price prediction"):
         if model_XGBoost is None:
             st.error("❌ Model not available. Please check the model file.")
-        elif not input_valid or df is None:
-            st.error("❌ Please fill in all fields correctly.")
         else:
-            with st.spinner("🤖 AI is analyzing your car..."):
-                try:
-                    # Make prediction
+            try:
+                # Create DataFrame
+                df = pd.DataFrame({
+                    'name': [name],
+                    'age': [float(age)],
+                    'km_driven': [float(km_driven)],
+                    'fuel': [fuel],
+                    'seller_type': [seller_type],
+                    'transmission': [transmission],
+                    'owner': [owner],
+                    'mileage': [float(mileage)],
+                    'engine': [float(engine)],
+                    'max_power': [float(max_power)],
+                    'seats': [float(seats)]
+                })
+                
+                # Make prediction
+                with st.spinner("🤖 AI is analyzing your car..."):
                     prediction = model_XGBoost.predict(df)
                     price = np.exp(prediction)[0]
                     formatted_price = f"{price:,.0f}"
                     
                     # Display result with animation
                     st.markdown(f"""
-                    <div class="price-result fade-in">
+                    <div class="price-result">
                         <h2 style="margin: 0; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
                             🎉 Predicted Price
                         </h2>
@@ -548,7 +466,7 @@ with predict_col2:
                     
                     with analysis_col2:
                         # Value assessment
-                        price_per_year = price / max(current_age, 1)
+                        price_per_year = price / max(age, 1)
                         
                         st.markdown(f"""
                         <div class="metrics-container">
@@ -560,34 +478,39 @@ with predict_col2:
                         </div>
                         """, unsafe_allow_html=True)
                     
-                    # Create a simple price visualization
-                    fig = go.Figure()
+                    # Create a simple price chart using matplotlib
+                    fig, ax = plt.subplots(figsize=(10, 6))
                     
-                    fig.add_trace(go.Bar(
-                        x=['Predicted Price'],
-                        y=[price],
-                        marker_color='rgba(255, 107, 107, 0.8)',
-                        text=[f'₹{price:,.0f}'],
-                        textposition='auto',
-                        name='Predicted Price'
-                    ))
+                    categories = ['Predicted\nPrice', 'Lower\nEstimate', 'Upper\nEstimate']
+                    prices = [price, lower_estimate, upper_estimate]
+                    colors = ['#ff6b6b', '#4ecdc4', '#45b7d1']
                     
-                    fig.update_layout(
-                        title="🎯 AI Price Prediction",
-                        yaxis_title="Price (₹)",
-                        showlegend=False,
-                        height=400,
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        paper_bgcolor='rgba(0,0,0,0)'
-                    )
+                    bars = ax.bar(categories, prices, color=colors, alpha=0.8)
                     
-                    st.plotly_chart(fig, use_container_width=True)
+                    # Add value labels on bars
+                    for bar, price_val in zip(bars, prices):
+                        height = bar.get_height()
+                        ax.text(bar.get_x() + bar.get_width()/2., height,
+                               f'₹{price_val:,.0f}', ha='center', va='bottom', fontsize=12, fontweight='bold')
+                    
+                    ax.set_title('🎯 AI Price Prediction Analysis', fontsize=16, fontweight='bold', pad=20)
+                    ax.set_ylabel('Price (₹)', fontsize=12)
+                    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'₹{x:,.0f}'))
+                    
+                    # Style the plot
+                    ax.spines['top'].set_visible(False)
+                    ax.spines['right'].set_visible(False)
+                    ax.grid(axis='y', alpha=0.3)
+                    
+                    plt.tight_layout()
+                    st.pyplot(fig)
+                    plt.close()
                     
                     # Success animation
                     st.balloons()
                     
-                except Exception as e:
-                    st.error(f"❌ Prediction failed: {str(e)}")
+            except Exception as e:
+                st.error(f"❌ Prediction failed: {str(e)}")
 
 # -------------------- Footer --------------------
 st.markdown("---")
