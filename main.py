@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import plotly.express as px
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import numpy as np
+from datetime import datetime
 
 # -------------------- Page Configuration --------------------
 st.set_page_config(
@@ -200,6 +202,14 @@ category_mapping = {
     'previous_loan_defaults_on_file': {'No': 0, 'Yes': 1}
 }
 
+# -------------------- Matplotlib Style Configuration --------------------
+plt.style.use('default')
+plt.rcParams['font.size'] = 10
+plt.rcParams['axes.titlesize'] = 12
+plt.rcParams['axes.labelsize'] = 10
+plt.rcParams['xtick.labelsize'] = 9
+plt.rcParams['ytick.labelsize'] = 9
+
 # -------------------- Header --------------------
 st.markdown("""
 <div class="main-header">
@@ -286,10 +296,10 @@ st.markdown("## 📊 Loan Analysis")
 analysis_col1, analysis_col2, analysis_col3, analysis_col4 = st.columns(4)
 
 with analysis_col1:
-    st.metric("💰 Loan Amount", f"RS {loan_amnt:,}")
+    st.metric("💰 Loan Amount", f"${loan_amnt:,}")
 
 with analysis_col2:
-    st.metric("📊 Annual Income", f"RS{person_income:,}")
+    st.metric("📊 Annual Income", f"${person_income:,}")
 
 with analysis_col3:
     st.metric("📈 Loan-to-Income Ratio", f"{loan_percent_income:.1%}")
@@ -298,27 +308,57 @@ with analysis_col4:
     risk_level = "🟢 Low" if loan_percent_income < 0.3 else "🟡 Medium" if loan_percent_income < 0.5 else "🔴 High"
     st.metric("⚠️ Risk Level", risk_level)
 
-# Create a gauge chart for loan-to-income ratio
-fig = go.Figure(go.Indicator(
-    mode = "gauge+number+delta",
-    value = loan_percent_income * 100,
-    domain = {'x': [0, 1], 'y': [0, 1]},
-    title = {'text': "Loan-to-Income Ratio (%)"},
-    delta = {'reference': 30},
-    gauge = {
-        'axis': {'range': [None, 100]},
-        'bar': {'color': "darkblue"},
-        'steps': [
-            {'range': [0, 30], 'color': "lightgreen"},
-            {'range': [30, 50], 'color': "yellow"},
-            {'range': [50, 100], 'color': "red"}],
-        'threshold': {
-            'line': {'color': "red", 'width': 4},
-            'thickness': 0.75,
-            'value': 50}}))
+# Create a gauge chart for loan-to-income ratio using Matplotlib
+def create_gauge_chart(value, title="Loan-to-Income Ratio (%)"):
+    fig, ax = plt.subplots(figsize=(8, 4), facecolor='white')
+    
+    # Convert to percentage
+    percentage = value * 100
+    
+    # Create semicircle gauge
+    theta = np.linspace(0, np.pi, 100)
+    
+    # Background semicircle (full gauge)
+    ax.fill_between(theta, 0, 1, color='lightgray', alpha=0.3)
+    
+    # Color zones
+    # Green zone (0-30%)
+    theta_green = np.linspace(0, np.pi * 0.3, 50)
+    ax.fill_between(theta_green, 0, 1, color='lightgreen', alpha=0.7, label='Low Risk (0-30%)')
+    
+    # Yellow zone (30-50%)
+    theta_yellow = np.linspace(np.pi * 0.3, np.pi * 0.5, 50)
+    ax.fill_between(theta_yellow, 0, 1, color='yellow', alpha=0.7, label='Medium Risk (30-50%)')
+    
+    # Red zone (50-100%)
+    theta_red = np.linspace(np.pi * 0.5, np.pi, 50)
+    ax.fill_between(theta_red, 0, 1, color='red', alpha=0.7, label='High Risk (50%+)')
+    
+    # Current value needle
+    current_angle = np.pi * (1 - percentage / 100)  # Reverse for correct direction
+    needle_length = 0.8
+    ax.arrow(current_angle, 0, 0, needle_length, head_width=0.1, head_length=0.1, 
+             fc='darkblue', ec='darkblue', linewidth=3)
+    
+    # Add percentage text
+    ax.text(np.pi/2, 0.5, f'{percentage:.1f}%', ha='center', va='center', 
+            fontsize=16, fontweight='bold', color='darkblue')
+    
+    # Styling
+    ax.set_xlim(-0.1, np.pi + 0.1)
+    ax.set_ylim(-0.1, 1.1)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+    
+    # Add legend
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=3)
+    
+    plt.tight_layout()
+    return fig
 
-fig.update_layout(height=300)
-st.plotly_chart(fig, use_container_width=True)
+# Display gauge chart
+st.pyplot(create_gauge_chart(loan_percent_income), use_container_width=True)
 
 # -------------------- Prediction --------------------
 st.markdown("---")
@@ -382,23 +422,86 @@ if predict_button and model_XGBoost is not None:
         with prob_col2:
             st.metric("🔴 Default Risk", f"{prediction_proba[0]:.1%}")
 
-        # Create probability chart
-        # prob_fig = px.bar(
-        #     x=['Approval', 'Default Risk'],
-        #     y=[prediction_proba[1]*100, prediction_proba[0]*100],
-        #     color=['Approval', 'Default Risk'],
-        #     color_discrete_map={'Approval': '#00f2fe', 'Default Risk': '#f5576c'},
-        #     title="Risk Assessment Probability"
-        # )
-        # prob_fig.update_layout(showlegend=False, yaxis_title="Probability (%)")
-        # st.plotly_chart(prob_fig, use_container_width=True)
+        # Create probability chart using Matplotlib
+        def create_probability_chart(approval_prob, default_prob):
+            fig, ax = plt.subplots(figsize=(10, 6), facecolor='white')
+            
+            categories = ['Approval\nProbability', 'Default\nRisk']
+            values = [approval_prob * 100, default_prob * 100]
+            colors = ['#00f2fe', '#f5576c']
+            
+            bars = ax.bar(categories, values, color=colors, alpha=0.8, edgecolor='white', linewidth=2)
+            
+            # Add value labels on bars
+            for bar, value in zip(bars, values):
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2., height + 1,
+                       f'{value:.1f}%', ha='center', va='bottom', fontweight='bold', fontsize=12)
+            
+            ax.set_ylabel('Probability (%)', fontweight='bold')
+            ax.set_title('Risk Assessment Probability Distribution', fontsize=14, fontweight='bold', pad=20)
+            ax.set_ylim(0, 110)
+            ax.grid(True, alpha=0.3, axis='y')
+            
+            # Style the plot
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.set_facecolor('#f8f9fa')
+            
+            plt.tight_layout()
+            return fig
+        
+        # Display probability chart
+        st.pyplot(create_probability_chart(prediction_proba[1], prediction_proba[0]), use_container_width=True)
+
+        # Additional insights
+        st.markdown("### 🔍 Key Risk Factors Analysis")
+        
+        # Create risk factors visualization
+        def create_risk_factors_chart():
+            factors = ['Credit Score', 'Loan-to-Income', 'Credit History', 'Employment Exp', 'Interest Rate']
+            
+            # Normalize factors to 0-100 scale for visualization
+            factor_scores = [
+                (credit_score - 300) / 5.5,  # Credit score (300-850 -> 0-100)
+                max(0, 100 - (loan_percent_income * 200)),  # Lower ratio = higher score
+                min(100, cb_person_cred_hist_length * 5),  # Credit history
+                min(100, person_emp_exp * 4),  # Employment experience
+                max(0, 100 - (loan_int_rate * 2))  # Lower rate = higher score
+            ]
+            
+            fig, ax = plt.subplots(figsize=(12, 6), facecolor='white')
+            
+            # Create horizontal bar chart
+            bars = ax.barh(factors, factor_scores, color=['#667eea' if score >= 50 else '#f5576c' for score in factor_scores])
+            
+            # Add score labels
+            for i, (bar, score) in enumerate(zip(bars, factor_scores)):
+                width = bar.get_width()
+                ax.text(width + 2, bar.get_y() + bar.get_height()/2, 
+                       f'{score:.0f}', ha='left', va='center', fontweight='bold')
+            
+            ax.set_xlabel('Risk Score (0-100, Higher is Better)', fontweight='bold')
+            ax.set_title('Individual Risk Factor Assessment', fontsize=14, fontweight='bold', pad=20)
+            ax.set_xlim(0, 110)
+            ax.grid(True, alpha=0.3, axis='x')
+            
+            # Add vertical line at 50 (neutral threshold)
+            ax.axvline(x=50, color='orange', linestyle='--', alpha=0.7, label='Neutral Threshold')
+            ax.legend()
+            
+            plt.tight_layout()
+            return fig
+        
+        st.pyplot(create_risk_factors_chart(), use_container_width=True)
 
 # -------------------- Footer --------------------
 st.markdown("---")
-st.markdown("""
+st.markdown(f"""
 <div style="text-align: center; padding: 2rem; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 2rem;">
     <h4>🤖 Powered by Advanced Machine Learning</h4>
     <p>This AI model analyzes multiple factors to provide accurate loan approval predictions.<br>
     <em>Disclaimer: This is for demonstration purposes only. Consult financial professionals for actual loan decisions.</em></p>
+    <small>Last updated: {datetime.now().strftime('%B %d, %Y')}</small>
 </div>
 """, unsafe_allow_html=True)
