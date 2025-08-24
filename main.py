@@ -430,7 +430,7 @@ if predict_button and model_XGBoost is not None:
 
         # Create probability chart using Matplotlib
         def create_probability_chart(approval_prob, default_prob):
-            fig, ax = plt.subplots(figsize=(10, 6), facecolor='white')
+            fig, ax = plt.subplots(figsize=(8, 4), facecolor='white')
             
             categories = ['Approval\nProbability', 'Default\nRisk']
             values = [approval_prob * 100, default_prob * 100]
@@ -461,45 +461,45 @@ if predict_button and model_XGBoost is not None:
         st.pyplot(create_probability_chart(prediction_proba[1], prediction_proba[0]), use_container_width=True)
 
         # Additional insights
-        st.markdown("### 🔍 Key Risk Factors Analysis")
+        # st.markdown("### 🔍 Key Risk Factors Analysis")
         
-        # Create risk factors visualization
-        def create_risk_factors_chart():
-            factors = ['Credit Score', 'Loan-to-Income', 'Credit History', 'Employment Exp', 'Interest Rate']
+        # # Create risk factors visualization
+        # def create_risk_factors_chart():
+        #     factors = ['Credit Score', 'Loan-to-Income', 'Credit History', 'Employment Exp', 'Interest Rate']
             
-            # Normalize factors to 0-100 scale for visualization
-            factor_scores = [
-                (credit_score - 300) / 5.5,  # Credit score (300-850 -> 0-100)
-                max(0, 100 - (loan_percent_income * 200)),  # Lower ratio = higher score
-                min(100, cb_person_cred_hist_length * 5),  # Credit history
-                min(100, person_emp_exp * 4),  # Employment experience
-                max(0, 100 - (loan_int_rate * 2))  # Lower rate = higher score
-            ]
+        #     # Normalize factors to 0-100 scale for visualization
+        #     factor_scores = [
+        #         (credit_score - 300) / 5.5,  # Credit score (300-850 -> 0-100)
+        #         max(0, 100 - (loan_percent_income * 200)),  # Lower ratio = higher score
+        #         min(100, cb_person_cred_hist_length * 5),  # Credit history
+        #         min(100, person_emp_exp * 4),  # Employment experience
+        #         max(0, 100 - (loan_int_rate * 2))  # Lower rate = higher score
+        #     ]
             
-            fig, ax = plt.subplots(figsize=(12, 6), facecolor='white')
+        #     fig, ax = plt.subplots(figsize=(12, 6), facecolor='white')
             
-            # Create horizontal bar chart
-            bars = ax.barh(factors, factor_scores, color=['#667eea' if score >= 50 else '#f5576c' for score in factor_scores])
+        #     # Create horizontal bar chart
+        #     bars = ax.barh(factors, factor_scores, color=['#667eea' if score >= 50 else '#f5576c' for score in factor_scores])
             
-            # Add score labels
-            for i, (bar, score) in enumerate(zip(bars, factor_scores)):
-                width = bar.get_width()
-                ax.text(width + 2, bar.get_y() + bar.get_height()/2, 
-                       f'{score:.0f}', ha='left', va='center', fontweight='bold')
+        #     # Add score labels
+        #     for i, (bar, score) in enumerate(zip(bars, factor_scores)):
+        #         width = bar.get_width()
+        #         ax.text(width + 2, bar.get_y() + bar.get_height()/2, 
+        #                f'{score:.0f}', ha='left', va='center', fontweight='bold')
             
-            ax.set_xlabel('Risk Score (0-100, Higher is Better)', fontweight='bold')
-            ax.set_title('Individual Risk Factor Assessment', fontsize=14, fontweight='bold', pad=20)
-            ax.set_xlim(0, 110)
-            ax.grid(True, alpha=0.3, axis='x')
+        #     ax.set_xlabel('Risk Score (0-100, Higher is Better)', fontweight='bold')
+        #     ax.set_title('Individual Risk Factor Assessment', fontsize=14, fontweight='bold', pad=20)
+        #     ax.set_xlim(0, 110)
+        #     ax.grid(True, alpha=0.3, axis='x')
             
-            # Add vertical line at 50 (neutral threshold)
-            ax.axvline(x=50, color='orange', linestyle='--', alpha=0.7, label='Neutral Threshold')
-            ax.legend()
+        #     # Add vertical line at 50 (neutral threshold)
+        #     ax.axvline(x=50, color='orange', linestyle='--', alpha=0.7, label='Neutral Threshold')
+        #     ax.legend()
             
-            plt.tight_layout()
-            return fig
+        #     plt.tight_layout()
+        #     return fig
         
-        st.pyplot(create_risk_factors_chart(), use_container_width=True)
+        # st.pyplot(create_risk_factors_chart(), use_container_width=True)
 
 # -------------------- Footer --------------------
 st.markdown("---")
@@ -517,5 +517,6 @@ st.markdown(f"""
     <small>Last updated: {datetime.now().strftime('%B %d, %Y')}</small>
 </div>
 """, unsafe_allow_html=True)
+
 
 
