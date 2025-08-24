@@ -464,19 +464,19 @@ with predict_col2:
                         </div>
                         """, unsafe_allow_html=True)
                     
-                    with analysis_col2:
-                        # Value assessment
-                        price_per_year = price / max(age, 1)
+                    # with analysis_col2:
+                    #     # Value assessment
+                    #     price_per_year = price / max(age, 1)
                         
-                        st.markdown(f"""
-                        <div class="metrics-container">
-                            <h4>💰 Value Assessment</h4>
-                            <div class="metric-card">
-                                <div class="metric-value">₹ {price_per_year:,.0f}</div>
-                                <div class="metric-label">Value per Year</div>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                    #     st.markdown(f"""
+                    #     <div class="metrics-container">
+                    #         <h4>💰 Value Assessment</h4>
+                    #         <div class="metric-card">
+                    #             <div class="metric-value">₹ {price_per_year:,.0f}</div>
+                    #             <div class="metric-label">Value per Year</div>
+                    #         </div>
+                    #     </div>
+                    #     """, unsafe_allow_html=True)
                     
                     # Create a simple price chart using matplotlib
                     fig, ax = plt.subplots(figsize=(10, 6))
@@ -528,3 +528,4 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
+
