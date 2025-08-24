@@ -1,5 +1,3 @@
-# testing
-
 ## 🏦 Loan Approval Prediction App
 
 This project predicts whether a loan application will be approved or rejected based on applicant information such as age, income, employment details, credit history, and loan attributes. The model uses machine learning classification algorithms to assist financial institutions in making faster and more consistent loan decisions.
