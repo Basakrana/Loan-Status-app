@@ -280,6 +280,9 @@ st.markdown("""
         Get instant, accurate car valuations powered by advanced machine learning<br>
         <strong>94% Accuracy</strong> • <strong>Instant Results</strong> • <strong>Smart Analytics</strong>
     </div>
+    <div style="margin-top: 1.5rem; font-size: 1rem; opacity: 0.8;">
+        <strong>Developed by: RANA BASAK</strong>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -522,10 +525,16 @@ st.markdown("""
         market trends, and regional pricing to provide you with the most accurate car valuation possible.
     </p>
     <br>
+    <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+        <h4 style="color: white; margin-bottom: 0.5rem;">👨‍💻 Developer</h4>
+        <p style="color: white; font-size: 1.2rem; font-weight: bold; margin: 0;">RANA BASAK</p>
+        <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0.5rem 0 0 0;">
+            Machine Learning Engineer & Data Scientist
+        </p>
+    </div>
     <p style="color: rgba(255,255,255,0.7); font-style: italic; margin: 0;">
         <strong>Disclaimer:</strong> Predictions are estimates based on historical data. 
         Actual market prices may vary based on local conditions and vehicle specifics.
     </p>
 </div>
 """, unsafe_allow_html=True)
-
