@@ -214,7 +214,13 @@ plt.rcParams['ytick.labelsize'] = 9
 st.markdown("""
 <div class="main-header">
     <div class="main-title">🚀 AI Loan Predictor</div>
-    <div class="main-subtitle">Intelligent loan approval prediction powered by machine learning</div>
+    <div class="main-subtitle">
+        Get instant, loan approval status powered by advanced machine learning<br>
+        <strong>95% + Accuracy</strong> • <strong>Instant Results</strong> • <strong>Smart Analytics</strong>
+    </div>
+    <div style="margin-top: 1.5rem; font-size: 1rem; opacity: 0.8;">
+        <strong>Developed by: RANA BASAK</strong>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -501,7 +507,14 @@ st.markdown(f"""
 <div style="text-align: center; padding: 2rem; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 2rem;">
     <h4>🤖 Powered by Advanced Machine Learning</h4>
     <p>This AI model analyzes multiple factors to provide accurate loan approval predictions.<br>
+    <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+        <p style="color: white; font-size: 1.2rem; font-weight: bold; margin: 0;">RANA BASAK</p>
+        <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0.5rem 0 0 0;">
+            Business Analyst & Data Scientist 
+        </p>
+    </div>
     <em>Disclaimer: This is for demonstration purposes only. Consult financial professionals for actual loan decisions.</em></p>
     <small>Last updated: {datetime.now().strftime('%B %d, %Y')}</small>
 </div>
 """, unsafe_allow_html=True)
+
